@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: Music-Audjust
+    runtime: python
+    buildCommand: "apt-get install -y ffmpeg && pip install -r requirements.txt"
+    startCommand: "gunicorn app:app"
