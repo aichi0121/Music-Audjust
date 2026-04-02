@@ -7,441 +7,101 @@
   <script src="https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #0f0f13; color: #e8e8f0; min-height: 100vh; }
 
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #0f0f13;
-      color: #e8e8f0;
-      min-height: 100vh;
-    }
-
-    /* NAVBAR */
-    nav {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 18px 40px;
-      background: #16161e;
-      border-bottom: 1px solid #2a2a3a;
-    }
-    .logo {
-      font-size: 1.4rem;
-      font-weight: 700;
-      background: linear-gradient(135deg, #a78bfa, #60a5fa);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    nav ul {
-      list-style: none;
-      display: flex;
-      gap: 28px;
-    }
-    nav ul li a {
-      color: #9999bb;
-      text-decoration: none;
-      font-size: 0.9rem;
-      transition: color 0.2s;
-    }
+    nav { display: flex; justify-content: space-between; align-items: center; padding: 18px 40px; background: #16161e; border-bottom: 1px solid #2a2a3a; }
+    .logo { font-size: 1.4rem; font-weight: 700; background: linear-gradient(135deg, #a78bfa, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    nav ul { list-style: none; display: flex; gap: 28px; }
+    nav ul li a { color: #9999bb; text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
     nav ul li a:hover { color: #e8e8f0; }
 
-    /* HERO */
-    .hero {
-      text-align: center;
-      padding: 64px 20px 40px;
-    }
-    .hero h1 {
-      font-size: 2.8rem;
-      font-weight: 800;
-      line-height: 1.2;
-      margin-bottom: 16px;
-    }
-    .hero h1 span {
-      background: linear-gradient(135deg, #a78bfa, #60a5fa);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    .hero p {
-      color: #9999bb;
-      font-size: 1.05rem;
-      max-width: 520px;
-      margin: 0 auto 32px;
-      line-height: 1.7;
-    }
+    .hero { text-align: center; padding: 64px 20px 40px; }
+    .hero h1 { font-size: 2.8rem; font-weight: 800; line-height: 1.2; margin-bottom: 16px; }
+    .hero h1 span { background: linear-gradient(135deg, #a78bfa, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero p { color: #9999bb; font-size: 1.05rem; max-width: 520px; margin: 0 auto 32px; line-height: 1.7; }
 
-    /* FEATURE BADGES */
-    .badges {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 48px;
-    }
-    .badge {
-      background: #1e1e2e;
-      border: 1px solid #2a2a3a;
-      border-radius: 20px;
-      padding: 6px 16px;
-      font-size: 0.82rem;
-      color: #a78bfa;
-    }
+    .badges { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-bottom: 48px; }
+    .badge { background: #1e1e2e; border: 1px solid #2a2a3a; border-radius: 20px; padding: 6px 16px; font-size: 0.82rem; color: #a78bfa; }
 
-    /* MAIN CARD */
-    .card {
-      background: #16161e;
-      border: 1px solid #2a2a3a;
-      border-radius: 16px;
-      padding: 32px;
-      max-width: 820px;
-      margin: 0 auto 40px;
-    }
+    .card { background: #16161e; border: 1px solid #2a2a3a; border-radius: 16px; padding: 32px; max-width: 820px; margin: 0 auto 40px; }
 
-    /* UPLOAD ZONE */
-    .upload-zone {
-      border: 2px dashed #3a3a5a;
-      border-radius: 12px;
-      padding: 48px 20px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.3s;
-      background: #0f0f13;
-      position: relative;
-    }
-    .upload-zone:hover, .upload-zone.drag-over {
-      border-color: #a78bfa;
-      background: #1a1a2e;
-    }
-    .upload-zone input[type="file"] {
-      position: absolute;
-      inset: 0;
-      opacity: 0;
-      cursor: pointer;
-      width: 100%;
-      height: 100%;
-    }
-    .upload-icon {
-      font-size: 2.5rem;
-      margin-bottom: 12px;
-    }
-    .upload-zone h3 {
-      font-size: 1.1rem;
-      margin-bottom: 8px;
-      color: #e8e8f0;
-    }
-    .upload-zone p {
-      color: #6666aa;
-      font-size: 0.85rem;
-    }
-    .upload-zone .formats {
-      margin-top: 12px;
-      font-size: 0.78rem;
-      color: #4444aa;
-    }
+    .upload-zone { border: 2px dashed #3a3a5a; border-radius: 12px; padding: 48px 20px; text-align: center; cursor: pointer; transition: all 0.3s; background: #0f0f13; position: relative; }
+    .upload-zone:hover, .upload-zone.drag-over { border-color: #a78bfa; background: #1a1a2e; }
+    .upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .upload-icon { font-size: 2.5rem; margin-bottom: 12px; }
+    .upload-zone h3 { font-size: 1.1rem; margin-bottom: 8px; color: #e8e8f0; }
+    .upload-zone p { color: #6666aa; font-size: 0.85rem; }
+    .upload-zone .formats { margin-top: 12px; font-size: 0.78rem; color: #4444aa; }
 
-    /* WAVEFORM SECTION */
-    .waveform-section {
-      display: none;
-      margin-top: 24px;
-    }
+    .waveform-section { display: none; margin-top: 24px; }
     .waveform-section.visible { display: block; }
+    .file-info { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding: 10px 16px; background: #1e1e2e; border-radius: 8px; }
+    .file-info .name { font-size: 0.9rem; color: #a78bfa; font-weight: 600; }
+    .file-info .meta { font-size: 0.8rem; color: #6666aa; }
+    #waveform { border-radius: 8px; overflow: hidden; background: #0f0f13; padding: 8px 0; }
 
-    .file-info {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 16px;
-      padding: 10px 16px;
-      background: #1e1e2e;
-      border-radius: 8px;
-    }
-    .file-info .name {
-      font-size: 0.9rem;
-      color: #a78bfa;
-      font-weight: 600;
-    }
-    .file-info .meta {
-      font-size: 0.8rem;
-      color: #6666aa;
-    }
-
-    #waveform {
-      border-radius: 8px;
-      overflow: hidden;
-      background: #0f0f13;
-      padding: 8px 0;
-    }
-
-    /* PLAYBACK CONTROLS */
-    .playback {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-top: 16px;
-    }
-    .btn-play {
-      background: linear-gradient(135deg, #a78bfa, #60a5fa);
-      border: none;
-      border-radius: 50%;
-      width: 44px;
-      height: 44px;
-      font-size: 1.1rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: opacity 0.2s;
-    }
+    .playback { display: flex; align-items: center; gap: 16px; margin-top: 16px; }
+    .btn-play { background: linear-gradient(135deg, #a78bfa, #60a5fa); border: none; border-radius: 50%; width: 44px; height: 44px; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: opacity 0.2s; }
     .btn-play:hover { opacity: 0.85; }
-    .time-display {
-      font-size: 0.85rem;
-      color: #9999bb;
-      font-variant-numeric: tabular-nums;
-    }
+    .time-display { font-size: 0.85rem; color: #9999bb; font-variant-numeric: tabular-nums; }
 
-    /* SETTINGS PANEL */
-    .settings-panel {
-      display: none;
-      margin-top: 28px;
-      padding-top: 28px;
-      border-top: 1px solid #2a2a3a;
-    }
+    .settings-panel { display: none; margin-top: 28px; padding-top: 28px; border-top: 1px solid #2a2a3a; }
     .settings-panel.visible { display: block; }
+    .settings-title { font-size: 0.85rem; font-weight: 700; color: #6666aa; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 20px; }
 
-    .settings-title {
-      font-size: 0.85rem;
-      font-weight: 700;
-      color: #6666aa;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 20px;
-    }
+    .mode-tabs { display: flex; gap: 8px; margin-bottom: 24px; }
+    .mode-tab { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #2a2a3a; background: #0f0f13; color: #6666aa; font-size: 0.85rem; cursor: pointer; text-align: center; transition: all 0.2s; }
+    .mode-tab.active { background: #1e1e3e; border-color: #a78bfa; color: #a78bfa; font-weight: 600; }
 
-    .settings-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      margin-bottom: 24px;
-    }
+    .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+    .setting-group label { display: block; font-size: 0.82rem; color: #9999bb; margin-bottom: 8px; }
+    .setting-group input[type="number"], .setting-group select { width: 100%; background: #0f0f13; border: 1px solid #2a2a3a; border-radius: 8px; padding: 10px 14px; color: #e8e8f0; font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
+    .setting-group input:focus, .setting-group select:focus { border-color: #a78bfa; }
 
-    .setting-group label {
-      display: block;
-      font-size: 0.82rem;
-      color: #9999bb;
-      margin-bottom: 8px;
-    }
-    .setting-group input[type="number"],
-    .setting-group select {
-      width: 100%;
-      background: #0f0f13;
-      border: 1px solid #2a2a3a;
-      border-radius: 8px;
-      padding: 10px 14px;
-      color: #e8e8f0;
-      font-size: 0.9rem;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    .setting-group input:focus,
-    .setting-group select:focus {
-      border-color: #a78bfa;
-    }
+    /* TRIM SECTION */
+    .trim-section { margin-bottom: 24px; }
+    .trim-row { display: flex; gap: 16px; align-items: flex-end; }
+    .trim-row .setting-group { flex: 1; }
+    .btn-set-time { padding: 10px 14px; border-radius: 8px; border: 1px solid #a78bfa; background: transparent; color: #a78bfa; font-size: 0.8rem; cursor: pointer; white-space: nowrap; transition: background 0.2s; }
+    .btn-set-time:hover { background: #a78bfa20; }
+    .trim-hint { font-size: 0.78rem; color: #4444aa; margin-top: 8px; }
 
-    /* MODE TABS */
-    .mode-tabs {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 24px;
-    }
-    .mode-tab {
-      flex: 1;
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px solid #2a2a3a;
-      background: #0f0f13;
-      color: #6666aa;
-      font-size: 0.85rem;
-      cursor: pointer;
-      text-align: center;
-      transition: all 0.2s;
-    }
-    .mode-tab.active {
-      background: #1e1e3e;
-      border-color: #a78bfa;
-      color: #a78bfa;
-      font-weight: 600;
-    }
-
-    /* REGION CONTROLS */
-    .region-controls {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 16px;
-    }
-    .btn-region {
-      padding: 8px 16px;
-      border-radius: 8px;
-      border: 1px solid;
-      font-size: 0.82rem;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .btn-keep {
-      border-color: #34d399;
-      color: #34d399;
-      background: transparent;
-    }
-    .btn-keep:hover { background: #34d39920; }
-    .btn-remove {
-      border-color: #f87171;
-      color: #f87171;
-      background: transparent;
-    }
-    .btn-remove:hover { background: #f8717120; }
-    .btn-clear {
-      border-color: #6666aa;
-      color: #6666aa;
-      background: transparent;
-    }
-    .btn-clear:hover { background: #6666aa20; }
-
-    /* REGION LIST */
-    .region-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-bottom: 20px;
-      min-height: 40px;
-    }
-    .region-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 8px 14px;
-      border-radius: 8px;
-      font-size: 0.82rem;
-    }
-    .region-item.keep {
-      background: #34d39915;
-      border: 1px solid #34d39940;
-      color: #34d399;
-    }
-    .region-item.remove {
-      background: #f8717115;
-      border: 1px solid #f8717140;
-      color: #f87171;
-    }
-    .region-item button {
-      background: none;
-      border: none;
-      color: inherit;
-      cursor: pointer;
-      opacity: 0.6;
-      font-size: 0.9rem;
-    }
-    .region-item button:hover { opacity: 1; }
-
-    /* PROCESS BUTTON */
-    .btn-process {
-      width: 100%;
-      padding: 14px;
-      background: linear-gradient(135deg, #a78bfa, #60a5fa);
-      border: none;
-      border-radius: 10px;
-      color: white;
-      font-size: 1rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: opacity 0.2s, transform 0.1s;
-      margin-top: 8px;
-    }
+    .btn-process { width: 100%; padding: 14px; background: linear-gradient(135deg, #a78bfa, #60a5fa); border: none; border-radius: 10px; color: white; font-size: 1rem; font-weight: 700; cursor: pointer; transition: opacity 0.2s, transform 0.1s; margin-top: 8px; }
     .btn-process:hover { opacity: 0.9; transform: translateY(-1px); }
     .btn-process:active { transform: translateY(0); }
-    .btn-process:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-      transform: none;
-    }
+    .btn-process:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
-    /* RESULT SECTION */
-    .result-section {
-      display: none;
-      margin-top: 24px;
-      padding: 24px;
-      background: #0f0f13;
-      border-radius: 12px;
-      border: 1px solid #2a2a3a;
-      text-align: center;
-    }
+    .result-section { display: none; margin-top: 24px; padding: 24px; background: #0f0f13; border-radius: 12px; border: 1px solid #2a2a3a; text-align: center; }
     .result-section.visible { display: block; }
     .result-section .result-icon { font-size: 2rem; margin-bottom: 10px; }
     .result-section h3 { margin-bottom: 6px; }
     .result-section p { color: #6666aa; font-size: 0.85rem; margin-bottom: 16px; }
-    .btn-download {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 12px 28px;
-      background: linear-gradient(135deg, #34d399, #60a5fa);
-      border: none;
-      border-radius: 10px;
-      color: white;
-      font-size: 0.95rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: opacity 0.2s;
-    }
+    .btn-download { display: inline-flex; align-items: center; gap: 8px; padding: 12px 28px; background: linear-gradient(135deg, #34d399, #60a5fa); border: none; border-radius: 10px; color: white; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: opacity 0.2s; text-decoration: none; }
     .btn-download:hover { opacity: 0.85; }
 
-    /* LOADING */
-    .loading-bar {
-      display: none;
-      margin-top: 16px;
-    }
+    .loading-bar { display: none; margin-top: 16px; }
     .loading-bar.visible { display: block; }
-    .loading-bar-track {
-      background: #1e1e2e;
-      border-radius: 99px;
-      height: 6px;
-      overflow: hidden;
-    }
-    .loading-bar-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #a78bfa, #60a5fa);
-      border-radius: 99px;
-      width: 0%;
-      transition: width 0.3s;
-      animation: pulse-bar 1.5s ease-in-out infinite;
-    }
-    @keyframes pulse-bar {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.6; }
-    }
-    .loading-text {
-      font-size: 0.82rem;
-      color: #6666aa;
-      margin-top: 8px;
-      text-align: center;
-    }
+    .loading-bar-track { background: #1e1e2e; border-radius: 99px; height: 6px; overflow: hidden; }
+    .loading-bar-fill { height: 100%; background: linear-gradient(90deg, #a78bfa, #60a5fa); border-radius: 99px; width: 0%; transition: width 0.3s; animation: pulse-bar 1.5s ease-in-out infinite; }
+    @keyframes pulse-bar { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+    .loading-text { font-size: 0.82rem; color: #6666aa; margin-top: 8px; text-align: center; }
 
-    /* FOOTER */
-    footer {
-      text-align: center;
-      padding: 32px;
-      color: #3a3a5a;
-      font-size: 0.8rem;
-      border-top: 1px solid #1e1e2e;
-    }
+    .error-box { display: none; margin-top: 16px; padding: 12px 16px; background: #f8717115; border: 1px solid #f8717140; border-radius: 8px; color: #f87171; font-size: 0.85rem; }
+    .error-box.visible { display: block; }
+
+    footer { text-align: center; padding: 32px; color: #3a3a5a; font-size: 0.8rem; border-top: 1px solid #1e1e2e; }
 
     @media (max-width: 600px) {
       .hero h1 { font-size: 2rem; }
       .settings-grid { grid-template-columns: 1fr; }
       nav ul { display: none; }
       .card { padding: 20px; }
+      .trim-row { flex-direction: column; }
     }
   </style>
 </head>
 <body>
 
-  <!-- NAVBAR -->
   <nav>
     <div class="logo">🎵 AudioCraft</div>
     <ul>
@@ -451,20 +111,18 @@
     </ul>
   </nav>
 
-  <!-- HERO -->
   <section class="hero">
-    <h1>智慧音訊編輯<br/><span>縮短・延長・無縫循環</span></h1>
-    <p>上傳你的音樂，讓 AI 幫你找到最自然的剪接點，不再有突兀的硬切或淡出。</p>
+    <h1>智慧音訊編輯<br/><span>剪裁・轉換・即時下載</span></h1>
+    <p>上傳你的音樂，選擇剪裁區間或轉換格式，一鍵處理立即下載。</p>
     <div class="badges">
-      <span class="badge">🎵 智慧縮短</span>
-      <span class="badge">🔁 無縫循環</span>
-      <span class="badge">✂️ 內容感知剪接</span>
+      <span class="badge">✂️ 精準剪裁</span>
+      <span class="badge">🔄 格式轉換</span>
+      <span class="badge">🎵 多格式支援</span>
       <span class="badge">📱 TikTok / Reels 適用</span>
       <span class="badge">🆓 完全免費</span>
     </div>
   </section>
 
-  <!-- MAIN CARD -->
   <div class="card">
 
     <!-- UPLOAD -->
@@ -495,40 +153,62 @@
 
       <!-- MODE TABS -->
       <div class="mode-tabs">
-        <div class="mode-tab active" data-mode="shorten">✂️ 縮短</div>
-        <div class="mode-tab" data-mode="lengthen">📏 延長</div>
-        <div class="mode-tab" data-mode="loop">🔁 找循環</div>
+        <div class="mode-tab active" data-mode="trim">✂️ 剪裁</div>
+        <div class="mode-tab" data-mode="convert">🔄 格式轉換</div>
       </div>
 
-      <div class="settings-grid">
-        <div class="setting-group">
-          <label>目標長度（秒）</label>
-          <input type="number" id="targetLength" placeholder="例如：30" min="1" />
+      <!-- TRIM MODE -->
+      <div id="trimMode">
+        <div class="settings-title">⏱ 設定剪裁區間</div>
+        <div class="trim-section">
+          <div class="trim-row">
+            <div class="setting-group">
+              <label>開始時間（秒）</label>
+              <input type="number" id="startTime" placeholder="0" min="0" step="0.1" value="0"/>
+            </div>
+            <button class="btn-set-time" id="btnSetStart">📍 設為目前位置</button>
+          </div>
+          <br/>
+          <div class="trim-row">
+            <div class="setting-group">
+              <label>結束時間（秒）</label>
+              <input type="number" id="endTime" placeholder="自動（到結尾）" min="0" step="0.1"/>
+            </div>
+            <button class="btn-set-time" id="btnSetEnd">📍 設為目前位置</button>
+          </div>
+          <div class="trim-hint">💡 可播放音訊後點「設為目前位置」快速標記，或直接輸入秒數</div>
         </div>
-        <div class="setting-group">
-          <label>輸出格式</label>
-          <select id="outputFormat">
-            <option value="mp3">MP3</option>
-            <option value="wav">WAV</option>
-            <option value="m4a">M4A</option>
-          </select>
+        <div class="settings-grid">
+          <div class="setting-group">
+            <label>輸出格式</label>
+            <select id="trimFormat">
+              <option value="mp3">MP3</option>
+              <option value="wav">WAV</option>
+              <option value="m4a">M4A</option>
+              <option value="ogg">OGG</option>
+              <option value="flac">FLAC</option>
+            </select>
+          </div>
         </div>
       </div>
 
-      <!-- REGION CONTROLS -->
-      <div class="settings-title">🎯 標記區域</div>
-      <div class="region-controls">
-        <button class="btn-region btn-keep" id="btnKeep">✅ 標記保留</button>
-        <button class="btn-region btn-remove" id="btnRemove">❌ 標記移除</button>
-        <button class="btn-region btn-clear" id="btnClear">🗑 清除全部</button>
-      </div>
-      <div class="region-list" id="regionList">
-        <div style="color:#3a3a5a; font-size:0.82rem; text-align:center; padding:8px;">
-          尚未標記任何區域，可在波形上拖曳選取
+      <!-- CONVERT MODE -->
+      <div id="convertMode" style="display:none;">
+        <div class="settings-grid">
+          <div class="setting-group">
+            <label>輸出格式</label>
+            <select id="convertFormat">
+              <option value="mp3">MP3</option>
+              <option value="wav">WAV</option>
+              <option value="m4a">M4A</option>
+              <option value="ogg">OGG</option>
+              <option value="flac">FLAC</option>
+            </select>
+          </div>
         </div>
       </div>
 
-      <!-- PROCESS -->
+      <!-- PROCESS BUTTON -->
       <button class="btn-process" id="btnProcess">🚀 開始處理</button>
 
       <!-- LOADING -->
@@ -536,32 +216,37 @@
         <div class="loading-bar-track">
           <div class="loading-bar-fill" id="loadingFill"></div>
         </div>
-        <div class="loading-text" id="loadingText">分析音訊中...</div>
+        <div class="loading-text" id="loadingText">上傳並處理中...</div>
       </div>
+
+      <!-- ERROR -->
+      <div class="error-box" id="errorBox"></div>
 
       <!-- RESULT -->
       <div class="result-section" id="resultSection">
         <div class="result-icon">✅</div>
         <h3>處理完成！</h3>
-        <p id="resultMeta">已成功縮短至 30 秒</p>
-        <button class="btn-download" id="btnDownload">⬇️ 下載音訊</button>
+        <p id="resultMeta"></p>
+        <a class="btn-download" id="btnDownload" download>⬇️ 下載音訊</a>
       </div>
     </div>
 
   </div>
 
-  <!-- FOOTER -->
   <footer>
     © 2026 AudioCraft · 免費音訊智慧編輯工具 · 無需帳號
   </footer>
 
   <script>
-    let wavesurfer = null;
-    let regions = [];
-    let currentMode = 'shorten';
-    let duration = 0;
+    const API_BASE = 'https://music-audjust.onrender.com';
 
-    // Init WaveSurfer
+    let wavesurfer = null;
+    let currentFile = null;
+    let duration = 0;
+    let currentMode = 'trim';
+    let currentTime = 0;
+
+    // ── WaveSurfer ──
     function initWaveSurfer(url) {
       if (wavesurfer) wavesurfer.destroy();
       wavesurfer = WaveSurfer.create({
@@ -579,11 +264,18 @@
       wavesurfer.on('ready', () => {
         duration = wavesurfer.getDuration();
         updateTimeDisplay(0, duration);
-        document.getElementById('targetLength').placeholder = `目前 ${Math.round(duration)} 秒`;
+        document.getElementById('endTime').placeholder = `${duration.toFixed(1)}（到結尾）`;
       });
-      wavesurfer.on('audioprocess', (t) => updateTimeDisplay(t, duration));
+      wavesurfer.on('audioprocess', (t) => {
+        currentTime = t;
+        updateTimeDisplay(t, duration);
+      });
       wavesurfer.on('finish', () => {
         document.getElementById('btnPlay').textContent = '▶';
+      });
+      wavesurfer.on('seek', (progress) => {
+        currentTime = progress * duration;
+        updateTimeDisplay(currentTime, duration);
       });
     }
 
@@ -592,151 +284,177 @@
       document.getElementById('timeDisplay').textContent = `${fmt(current)} / ${fmt(total)}`;
     }
 
-    // File Upload
+    // ── File Upload ──
     const fileInput = document.getElementById('fileInput');
     const uploadZone = document.getElementById('uploadZone');
 
-    fileInput.addEventListener('change', handleFile);
-
-    uploadZone.addEventListener('dragover', e => {
-      e.preventDefault();
-      uploadZone.classList.add('drag-over');
+    fileInput.addEventListener('change', e => {
+      if (e.target.files[0]) processFile(e.target.files[0]);
     });
+    uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
     uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
     uploadZone.addEventListener('drop', e => {
       e.preventDefault();
       uploadZone.classList.remove('drag-over');
-      const file = e.dataTransfer.files[0];
-      if (file) processFile(file);
+      if (e.dataTransfer.files[0]) processFile(e.dataTransfer.files[0]);
     });
 
-    function handleFile(e) {
-      const file = e.target.files[0];
-      if (file) processFile(file);
-    }
-
     function processFile(file) {
+      currentFile = file;
       const url = URL.createObjectURL(file);
       document.getElementById('fileName').textContent = file.name;
       document.getElementById('fileMeta').textContent =
         `${(file.size / 1024 / 1024).toFixed(2)} MB · ${file.type || '音訊'}`;
-
       document.getElementById('waveformSection').classList.add('visible');
       document.getElementById('settingsPanel').classList.add('visible');
       document.getElementById('resultSection').classList.remove('visible');
-
+      hideError();
       initWaveSurfer(url);
     }
 
-    // Play/Pause
+    // ── Play/Pause ──
     document.getElementById('btnPlay').addEventListener('click', () => {
       if (!wavesurfer) return;
       wavesurfer.playPause();
-      document.getElementById('btnPlay').textContent =
-        wavesurfer.isPlaying() ? '⏸' : '▶';
+      document.getElementById('btnPlay').textContent = wavesurfer.isPlaying() ? '⏸' : '▶';
     });
 
-    // Mode Tabs
+    // ── Set Time Buttons ──
+    document.getElementById('btnSetStart').addEventListener('click', () => {
+      document.getElementById('startTime').value = currentTime.toFixed(1);
+    });
+    document.getElementById('btnSetEnd').addEventListener('click', () => {
+      document.getElementById('endTime').value = currentTime.toFixed(1);
+    });
+
+    // ── Mode Tabs ──
     document.querySelectorAll('.mode-tab').forEach(tab => {
       tab.addEventListener('click', () => {
         document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
         currentMode = tab.dataset.mode;
-        const label = document.querySelector('.setting-group label');
-        if (currentMode === 'loop') {
-          label.textContent = '循環長度（秒）';
-        } else {
-          label.textContent = '目標長度（秒）';
-        }
+        document.getElementById('trimMode').style.display = currentMode === 'trim' ? 'block' : 'none';
+        document.getElementById('convertMode').style.display = currentMode === 'convert' ? 'block' : 'none';
+        document.getElementById('resultSection').classList.remove('visible');
+        hideError();
       });
     });
 
-    // Region marking (simplified demo)
-    let regionColor = 'keep';
-    document.getElementById('btnKeep').addEventListener('click', () => {
-      regionColor = 'keep';
-      addDemoRegion();
-    });
-    document.getElementById('btnRemove').addEventListener('click', () => {
-      regionColor = 'remove';
-      addDemoRegion();
-    });
-    document.getElementById('btnClear').addEventListener('click', () => {
-      regions = [];
-      renderRegions();
-    });
-
-    function addDemoRegion() {
-      if (!duration) return;
-      const start = parseFloat((Math.random() * duration * 0.6).toFixed(1));
-      const end = parseFloat((start + duration * 0.15 + Math.random() * duration * 0.1).toFixed(1));
-      regions.push({ type: regionColor, start, end: Math.min(end, duration) });
-      renderRegions();
+    // ── Error helpers ──
+    function showError(msg) {
+      const box = document.getElementById('errorBox');
+      box.textContent = '⚠️ ' + msg;
+      box.classList.add('visible');
+    }
+    function hideError() {
+      document.getElementById('errorBox').classList.remove('visible');
     }
 
-    function renderRegions() {
-      const list = document.getElementById('regionList');
-      if (regions.length === 0) {
-        list.innerHTML = '<div style="color:#3a3a5a; font-size:0.82rem; text-align:center; padding:8px;">尚未標記任何區域，可在波形上拖曳選取</div>';
-        return;
-      }
-      const fmt = s => `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
-      list.innerHTML = regions.map((r, i) => `
-        <div class="region-item ${r.type}">
-          <span>${r.type === 'keep' ? '✅ 保留' : '❌ 移除'} &nbsp; ${fmt(r.start)} → ${fmt(r.end)}</span>
-          <button onclick="removeRegion(${i})">✕</button>
-        </div>
-      `).join('');
+    // ── Loading helpers ──
+    let fakeTimer = null;
+    function startLoading(label) {
+      const bar = document.getElementById('loadingBar');
+      const fill = document.getElementById('loadingFill');
+      document.getElementById('loadingText').textContent = label;
+      fill.style.width = '0%';
+      bar.classList.add('visible');
+      let p = 0;
+      fakeTimer = setInterval(() => {
+        p += Math.random() * 6 + 2;
+        if (p > 90) p = 90;
+        fill.style.width = p + '%';
+      }, 400);
+    }
+    function stopLoading() {
+      clearInterval(fakeTimer);
+      const fill = document.getElementById('loadingFill');
+      fill.style.width = '100%';
+      setTimeout(() => {
+        document.getElementById('loadingBar').classList.remove('visible');
+        fill.style.width = '0%';
+      }, 400);
     }
 
-    window.removeRegion = (i) => {
-      regions.splice(i, 1);
-      renderRegions();
-    };
+    // ── Process ──
+    document.getElementById('btnProcess').addEventListener('click', async () => {
+      if (!currentFile) { showError('請先上傳音訊檔案！'); return; }
+      hideError();
+      document.getElementById('resultSection').classList.remove('visible');
 
-    // Process (Demo)
-    document.getElementById('btnProcess').addEventListener('click', () => {
-      const target = document.getElementById('targetLength').value;
-      if (!target) {
-        alert('請輸入目標長度！');
-        return;
-      }
       const btn = document.getElementById('btnProcess');
       btn.disabled = true;
       btn.textContent = '處理中...';
 
-      const loading = document.getElementById('loadingBar');
-      const fill = document.getElementById('loadingFill');
-      const text = document.getElementById('loadingText');
-      loading.classList.add('visible');
+      try {
+        let blob, outputName;
 
-      const steps = ['分析音訊結構...', '偵測節拍與段落...', '尋找最佳銜接點...', '產生輸出檔案...'];
-      let progress = 0;
-      let step = 0;
-      const interval = setInterval(() => {
-        progress += Math.random() * 20 + 8;
-        if (progress >= 100) progress = 100;
-        fill.style.width = progress + '%';
-        if (step < steps.length) text.textContent = steps[step++];
-        if (progress >= 100) {
-          clearInterval(interval);
-          setTimeout(() => {
-            loading.classList.remove('visible');
-            fill.style.width = '0%';
-            btn.disabled = false;
-            btn.textContent = '🚀 開始處理';
-            const modeLabel = currentMode === 'shorten' ? '縮短' : currentMode === 'lengthen' ? '延長' : '循環';
-            document.getElementById('resultMeta').textContent =
-              `已成功${modeLabel}至 ${target} 秒（${document.getElementById('outputFormat').value.toUpperCase()} 格式）`;
-            document.getElementById('resultSection').classList.add('visible');
-          }, 400);
+        if (currentMode === 'trim') {
+          // ── /trim ──
+          const start = parseFloat(document.getElementById('startTime').value) || 0;
+          const endVal = document.getElementById('endTime').value;
+          const end = endVal ? parseFloat(endVal) : 0;
+          const fmt = document.getElementById('trimFormat').value;
+
+          if (end !== 0 && end <= start) {
+            showError('結束時間必須大於開始時間！');
+            return;
+          }
+
+          startLoading('上傳並剪裁中...');
+          const fd = new FormData();
+          fd.append('file', currentFile);
+          fd.append('start', start);
+          fd.append('end', end);
+
+          const res = await fetch(`${API_BASE}/trim`, { method: 'POST', body: fd });
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.error || `伺服器錯誤 (${res.status})`);
+          }
+          blob = await res.blob();
+          const base = currentFile.name.replace(/\.[^.]+$/, '');
+          outputName = `${base}_trimmed.${fmt}`;
+
+          const endDisplay = end === 0 ? `${duration.toFixed(1)}` : `${end}`;
+          document.getElementById('resultMeta').textContent =
+            `已剪裁 ${start}s → ${endDisplay}s，格式：${fmt.toUpperCase()}`;
+
+        } else {
+          // ── /convert ──
+          const fmt = document.getElementById('convertFormat').value;
+          startLoading('上傳並轉換格式中...');
+          const fd = new FormData();
+          fd.append('file', currentFile);
+          fd.append('format', fmt);
+
+          const res = await fetch(`${API_BASE}/convert`, { method: 'POST', body: fd });
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.error || `伺服器錯誤 (${res.status})`);
+          }
+          blob = await res.blob();
+          const base = currentFile.name.replace(/\.[^.]+$/, '');
+          outputName = `${base}.${fmt}`;
+          document.getElementById('resultMeta').textContent =
+            `已轉換為 ${fmt.toUpperCase()} 格式`;
         }
-      }, 300);
-    });
 
-    // Download (Demo)
-    document.getElementById('btnDownload').addEventListener('click', () => {
-      alert('⚠️ 這是前端展示版本\n\n實際下載功能需串接後端 API 才能運作！');
+        stopLoading();
+
+        // 建立下載連結
+        const dlUrl = URL.createObjectURL(blob);
+        const dlBtn = document.getElementById('btnDownload');
+        dlBtn.href = dlUrl;
+        dlBtn.download = outputName;
+        document.getElementById('resultSection').classList.add('visible');
+
+      } catch (err) {
+        stopLoading();
+        showError(err.message || '處理失敗，請稍後再試');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🚀 開始處理';
+      }
     });
   </script>
 </body>
