@@ -10,21 +10,22 @@ from pydub import AudioSegment
 app = Flask(__name__)
 CORS(app)
 
-# ── 工具：秒數格式化 ──
+# ── 降低取樣率節省記憶體（原 22050 → 11025）──
+TARGET_SR = 11025
+
 def fmt_time(sec):
     m = int(sec // 60)
     s = sec % 60
     return f"{m}:{s:05.2f}"
 
-# ── 工具：讀取音訊（統一轉 mono, sr=22050）──
-def load_audio(path, sr=22050):
+def load_audio(path, sr=TARGET_SR):
     audio = AudioSegment.from_file(path)
+    # ★ 先壓縮：mono + 降 bitrate
     audio = audio.set_frame_rate(sr).set_channels(1)
     samples = np.array(audio.get_array_of_samples(), dtype=np.float32)
     samples /= np.iinfo(audio.array_type).max
     return samples, sr
 
-# ── 工具：簡易節拍偵測（能量峰值法）──
 def detect_beats(y, sr, hop=512):
     frame_size = hop
     n_frames = len(y) // frame_size
@@ -37,14 +38,12 @@ def detect_beats(y, sr, hop=512):
     beat_times = peaks * frame_size / sr
     return beat_times
 
-# ── 工具：找最近的 beat ──
 def nearest_beat(t, beats):
     if len(beats) == 0:
         return t
     idx = np.argmin(np.abs(beats - t))
     return beats[idx]
 
-# ── 工具：段落邊界偵測（能量變化法）──
 def detect_boundaries(y, sr, n_segments=8):
     hop = 512
     frame_size = hop
@@ -54,7 +53,7 @@ def detect_boundaries(y, sr, n_segments=8):
         for i in range(n_frames)
     ])
     diff = np.abs(np.diff(uniform_filter1d(energy, size=10)))
-    peaks, _ = find_peaks(diff, distance=n_frames // (n_segments * 2))
+    peaks, _ = find_peaks(diff, distance=max(1, n_frames // (n_segments * 2)))
     if len(peaks) > n_segments:
         top = np.argsort(diff[peaks])[-n_segments:]
         peaks = np.sort(peaks[top])
@@ -63,7 +62,6 @@ def detect_boundaries(y, sr, n_segments=8):
     bound_times = np.unique(np.concatenate([[0.0], bound_times, [total_dur]]))
     return bound_times
 
-# ── 工具：音訊片段轉 base64 ──
 def audio_to_b64(y, sr):
     y_int16 = (y * 32767).astype(np.int16)
     audio_seg = AudioSegment(
@@ -73,11 +71,10 @@ def audio_to_b64(y, sr):
         channels=1
     )
     buf = io.BytesIO()
-    audio_seg.export(buf, format="mp3")
+    audio_seg.export(buf, format="mp3", bitrate="96k")  # ★ 限制輸出 bitrate
     buf.seek(0)
     return base64.b64encode(buf.read()).decode("utf-8")
 
-# ── 工具：加淡入淡出 ──
 def apply_fade(y, sr, fade_in_sec=0.05, fade_out_sec=2.0):
     y = y.copy()
     fade_in_len  = min(int(sr * fade_in_sec),  len(y) // 4)
@@ -86,7 +83,6 @@ def apply_fade(y, sr, fade_in_sec=0.05, fade_out_sec=2.0):
     y[-fade_out_len:] *= np.linspace(1, 0, fade_out_len)
     return y
 
-# ── RMS 能量 ──
 def compute_rms(y, sr, hop=512):
     frame_size = hop
     n_frames = len(y) // frame_size
@@ -98,24 +94,14 @@ def compute_rms(y, sr, hop=512):
     return rms, rms_times
 
 def get_rms_at(t, rms, rms_times):
+    if len(rms_times) == 0:  # ★ 空陣列保護
+        return 0.0
     idx = np.argmin(np.abs(rms_times - t))
     return float(rms[idx])
 
-# ══════════════════════════════════════════
-#  新增 helper 函式（只給 analyze_and_generate 用）
-# ══════════════════════════════════════════
-
 def find_good_start_points(y, sr, beat_times, bounds_times, rms, rms_times, max_start_sec=30):
-    """
-    找「感覺像開頭」的候選起始點：
-    1. 第0秒（一定包含）
-    2. 段落邊界點（bounds_times，排除最後一個）
-    3. 能量從低→高的上升點
-    全部對齊到最近的 beat，並限制在 max_start_sec 以內
-    """
     candidates = set()
     candidates.add(0.0)
-
     for b in bounds_times[:-1]:
         candidates.add(b)
 
@@ -144,26 +130,19 @@ def find_good_start_points(y, sr, beat_times, bounds_times, rms, rms_times, max_
 
     return sorted(snapped)
 
-
-def compute_beat_feature(y, sr, t, hop=512, window_sec=0.5):
-    """
-    計算某個時間點附近的音訊特徵（RMS + 簡易頻譜重心）
-    """
-    half    = int(sr * window_sec / 2)
-    center  = int(t * sr)
-    start   = max(0, center - half)
-    end     = min(len(y), center + half)
+def compute_beat_feature(y, sr, t, window_sec=0.5):
+    half   = int(sr * window_sec / 2)
+    center = int(t * sr)
+    start  = max(0, center - half)
+    end    = min(len(y), center + half)
     segment = y[start:end]
     if len(segment) == 0:
         return np.array([0.0, 0.0])
-
     rms = np.sqrt(np.mean(segment**2) + 1e-10)
     fft_mag = np.abs(np.fft.rfft(segment))
     freqs   = np.fft.rfftfreq(len(segment), d=1.0/sr)
-    spectral_centroid      = np.sum(freqs * fft_mag) / (np.sum(fft_mag) + 1e-10)
-    spectral_centroid_norm = spectral_centroid / (sr / 2)
-    return np.array([rms, spectral_centroid_norm])
-
+    sc      = np.sum(freqs * fft_mag) / (np.sum(fft_mag) + 1e-10)
+    return np.array([rms, sc / (sr / 2)])
 
 def beat_similarity(feat_a, feat_b):
     diff    = np.abs(feat_a - feat_b)
@@ -171,67 +150,43 @@ def beat_similarity(feat_a, feat_b):
     sc_sim  = max(0.0, 1.0 - diff[1] / 0.2)
     return rms_sim * 0.5 + sc_sim * 0.5
 
-
 def crossfade_splice(y, sr, start_time, cut_time, rejoin_time, end_time, fade_ms=300):
-    """
-    拼接兩段音訊並做 crossfade
-    段落A：y[start_time → cut_time]
-    段落B：y[rejoin_time → end_time]
-    """
     fade_len = int(sr * fade_ms / 1000)
     s_a = int(start_time  * sr)
     e_a = int(cut_time    * sr)
     s_b = int(rejoin_time * sr)
     e_b = int(end_time    * sr)
-
     seg_a = y[s_a:e_a].copy()
     seg_b = y[s_b:e_b].copy()
-
     if len(seg_a) == 0 or len(seg_b) == 0:
         return np.concatenate([seg_a, seg_b])
-
     fade_len = min(fade_len, len(seg_a) // 4, len(seg_b) // 4)
     if fade_len < 2:
         return np.concatenate([seg_a, seg_b])
-
     seg_a[-fade_len:] *= np.linspace(1, 0, fade_len)
     seg_b[:fade_len]  *= np.linspace(0, 1, fade_len)
     return np.concatenate([seg_a, seg_b])
 
-
 def find_natural_ending(beat_times, rms, rms_times, from_time, total_dur):
-    """
-    從 from_time 之後，找能量自然下降的結尾點
-    """
+    if len(rms_times) == 0:  # ★ 空陣列保護
+        return total_dur
     candidates = beat_times[beat_times > from_time]
     if len(candidates) == 0:
         return total_dur
-
     mean_rms = np.mean(rms)
-    low_energy_beats = []
-    for bt in candidates:
-        r = get_rms_at(bt, rms, rms_times)
-        if r < mean_rms * 0.8:
-            low_energy_beats.append(bt)
-
+    low_energy_beats = [bt for bt in candidates if get_rms_at(bt, rms, rms_times) < mean_rms * 0.8]
     if low_energy_beats:
         for bt in reversed(low_energy_beats):
             if bt < total_dur - 1.0:
                 return bt
-
     for bt in reversed(candidates):
         if bt < total_dur - 1.0:
             return bt
-
     return total_dur
 
-
-# ══════════════════════════════════════════
-#  核心分析函式（新版）
-# ══════════════════════════════════════════
 def analyze_and_generate(y, sr, target_dur, mode, n_versions=5, tolerance=0.15):
-    total_dur  = len(y) / sr
-    tol        = target_dur * tolerance
+    total_dur = len(y) / sr
+    tol       = target_dur * tolerance
 
     beat_times   = detect_beats(y, sr)
     bounds_times = detect_boundaries(y, sr, n_segments=max(4, int(total_dur / 15)))
@@ -240,61 +195,62 @@ def analyze_and_generate(y, sr, target_dur, mode, n_versions=5, tolerance=0.15):
     if len(beat_times) < 4:
         return []
 
+    # ★ 限制 beat 數量，避免三層迴圈爆炸
+    MAX_BEATS = 80
+    if len(beat_times) > MAX_BEATS:
+        step = len(beat_times) // MAX_BEATS
+        beat_times = beat_times[::step]
+
     beat_features = {bt: compute_beat_feature(y, sr, bt) for bt in beat_times}
 
     start_points = find_good_start_points(
         y, sr, beat_times, bounds_times, rms, rms_times,
         max_start_sec=min(30, total_dur * 0.3)
     )
+    # ★ 限制起始點數量
+    start_points = start_points[:5]
 
     candidates = []
+    MAX_CANDIDATES = 500  # ★ 限制候選數量
 
     for start_t in start_points:
         beats_after_start = beat_times[beat_times > start_t + 5.0]
-
         for cut_beat in beats_after_start:
             feat_x = beat_features[cut_beat]
             beats_for_rejoin = beat_times[beat_times > cut_beat + 5.0]
-
             for rejoin_beat in beats_for_rejoin:
-                end_t = find_natural_ending(
-                    beat_times, rms, rms_times,
-                    from_time=rejoin_beat + 2.0,
-                    total_dur=total_dur
-                )
-
-                part_a = cut_beat - start_t
-                part_b = end_t    - rejoin_beat
+                end_t  = find_natural_ending(beat_times, rms, rms_times,
+                                             from_time=rejoin_beat + 2.0,
+                                             total_dur=total_dur)
+                part_a = cut_beat  - start_t
+                part_b = end_t     - rejoin_beat
                 total  = part_a + part_b
-
                 if abs(total - target_dur) > tol:
                     continue
-
                 feat_y      = beat_features[rejoin_beat]
                 sim         = beat_similarity(feat_x, feat_y)
                 bound_score = (
                     (1.0 if any(abs(cut_beat   - b) < 0.5 for b in bounds_times) else 0.3) +
                     (1.0 if any(abs(rejoin_beat - b) < 0.5 for b in bounds_times) else 0.3)
                 ) / 2.0
-                rms_end   = get_rms_at(end_t, rms, rms_times)
-                rms_mean  = np.mean(rms) + 1e-6
+                rms_end  = get_rms_at(end_t, rms, rms_times)
+                rms_mean = float(np.mean(rms)) + 1e-6
                 end_score = max(0.0, 1.0 - rms_end / rms_mean)
-
-                if mode == "loop":
-                    score = sim * 0.7 + bound_score * 0.3
-                else:
-                    score = sim * 0.5 + bound_score * 0.3 + end_score * 0.2
-
+                score = (sim * 0.5 + bound_score * 0.3 + end_score * 0.2
+                         if mode != "loop" else sim * 0.7 + bound_score * 0.3)
                 candidates.append({
-                    "mode":       "loop" if mode == "loop" else "shorten",
-                    "start":      float(start_t),
-                    "cut":        float(cut_beat),
-                    "rejoin":     float(rejoin_beat),
-                    "end":        float(end_t),
-                    "duration":   round(total, 2),
-                    "score":      float(score),
+                    "mode": "loop" if mode == "loop" else "shorten",
+                    "start": float(start_t), "cut": float(cut_beat),
+                    "rejoin": float(rejoin_beat), "end": float(end_t),
+                    "duration": round(total, 2), "score": float(score),
                     "similarity": float(sim),
                 })
+                if len(candidates) >= MAX_CANDIDATES:  # ★ 提早中止
+                    break
+            if len(candidates) >= MAX_CANDIDATES:
+                break
+        if len(candidates) >= MAX_CANDIDATES:
+            break
 
     candidates.sort(key=lambda x: -x["score"])
     deduped = []
@@ -308,14 +264,26 @@ def analyze_and_generate(y, sr, target_dur, mode, n_versions=5, tolerance=0.15):
         if len(deduped) >= n_versions:
             break
 
+    # ★ 若完全沒有候選，回傳簡單裁切版本
+    if not deduped:
+        simple_end = min(total_dur, target_dur)
+        seg = y[:int(simple_end * sr)]
+        seg = apply_fade(seg, sr)
+        return [{
+            "id": 1, "mode": mode,
+            "start": 0.0, "end": round(simple_end, 2),
+            "duration": round(simple_end, 2), "score": 0.5,
+            "label": f"版本 1｜0:00.00 → {fmt_time(simple_end)}｜直接裁切",
+            "audio_b64": audio_to_b64(seg, sr),
+        }]
+
     results = []
     for idx, c in enumerate(deduped):
         spliced   = crossfade_splice(y, sr, c["start"], c["cut"], c["rejoin"], c["end"])
-        spliced   = apply_fade(spliced, sr, fade_in_sec=0.05, fade_out_sec=2.0)
+        spliced   = apply_fade(spliced, sr)
         audio_b64 = audio_to_b64(spliced, sr)
         score_pct = int(c["score"] * 100)
         sim_pct   = int(c["similarity"] * 100)
-
         label = (
             f"版本 {idx+1}｜"
             f"{fmt_time(c['start'])} → {fmt_time(c['cut'])} ✂️ "
@@ -324,24 +292,15 @@ def analyze_and_generate(y, sr, target_dur, mode, n_versions=5, tolerance=0.15):
         )
         if c["mode"] == "loop":
             label += "｜🔁 循環"
-
         results.append({
-            "id":        idx + 1,
-            "mode":      c["mode"],
-            "start":     round(c["start"],  2),
-            "end":       round(c["end"],    2),
-            "duration":  round(c["duration"], 2),
-            "score":     round(c["score"],  3),
-            "label":     label,
-            "audio_b64": audio_b64,
+            "id": idx + 1, "mode": c["mode"],
+            "start": round(c["start"], 2), "end": round(c["end"], 2),
+            "duration": round(c["duration"], 2), "score": round(c["score"], 3),
+            "label": label, "audio_b64": audio_b64,
         })
-
     return results
 
 
-# ══════════════════════════════════════════
-#  路由（完全不動）
-# ══════════════════════════════════════════
 @app.route("/analyze-and-cut", methods=["POST"])
 def analyze_and_cut():
     if "file" not in request.files:
@@ -361,6 +320,8 @@ def analyze_and_cut():
         results = analyze_and_generate(y, sr, target_dur, mode, n_versions)
         return jsonify({"results": results})
     except Exception as e:
+        import traceback
+        print(traceback.format_exc())  # ★ 印出完整錯誤到 Render log
         return jsonify({"error": str(e)}), 500
     finally:
         os.unlink(tmp_path)
@@ -370,14 +331,11 @@ def analyze_and_cut():
 def convert():
     if "file" not in request.files:
         return jsonify({"error": "No file"}), 400
-
-    file   = request.files["file"]
-    fmt    = request.form.get("format", "mp3")
-
+    file = request.files["file"]
+    fmt  = request.form.get("format", "mp3")
     with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(file.filename)[1]) as tmp:
         file.save(tmp.name)
         tmp_path = tmp.name
-
     try:
         audio = AudioSegment.from_file(tmp_path)
         buf   = io.BytesIO()
@@ -395,19 +353,16 @@ def convert():
 def trim():
     if "file" not in request.files:
         return jsonify({"error": "No file"}), 400
-
     file      = request.files["file"]
     start_sec = float(request.form.get("start", 0))
     end_sec   = float(request.form.get("end",   30))
-
     with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(file.filename)[1]) as tmp:
         file.save(tmp.name)
         tmp_path = tmp.name
-
     try:
-        audio    = AudioSegment.from_file(tmp_path)
-        trimmed  = audio[int(start_sec * 1000):int(end_sec * 1000)]
-        buf      = io.BytesIO()
+        audio   = AudioSegment.from_file(tmp_path)
+        trimmed = audio[int(start_sec * 1000):int(end_sec * 1000)]
+        buf     = io.BytesIO()
         trimmed.export(buf, format="mp3")
         buf.seek(0)
         return send_file(buf, mimetype="audio/mp3", as_attachment=True,
